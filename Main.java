@@ -1,63 +1,57 @@
-package com.ConsoleBankingApp;
-import java.util.*;
+package com.sece;
+import java.util.Scanner;
+
+
+import java.sql.SQLException;
 
 public class Main {
-	public static void main(String args[]) {
-		Bank bankobj = new Bank();
+
+	public static void main(String[] args) throws SQLException {
+		BankingServices accountService = new BankingServices();
+		TransactionService transactionService = new TransactionService();
 		Scanner scanner = new Scanner(System.in);
-		boolean running = true;
 		
-		while (running) {
-			System.out.println("\nBanking Operations: ");
-			System.out.println("1. Create Account");
-			System.out.println("2. credit to account");
-			System.out.println("3. withdraw from account");
-			System.out.print("Choose an operation: ");
-			int choice = scanner.nextInt();
-			scanner.nextLine();
-			
-			switch (choice) {
-			case 1:
-				System.out.print("Enter Account Number: ");
-				int accountNumber = scanner.nextInt();
-				System.out.print("Enter Account Holder Name: ");
-				String accountHolderName=scanner.next();
-				System.out.print("Enter Initial Balance: ");
-				double balance=scanner.nextDouble();
-				scanner.nextLine();
-				System.out.print("Enter Account Type (Savings / Current): ");
-				String accountType=scanner.next();
-				
-				CreateAccount createAccountObj=null;
-				if(accountType.equalsIgnoreCase("Savings")) {
-					System.out.print("Enter Transaction Limit: ");
-					int transactionLimit=scanner.nextInt();
-					scanner.nextLine();
-					createAccountObj=new CreateSavingsAccount(accountNumber,accountHolderName,balance,transactionLimit);
-				}
-				else {
-					createAccountObj=new CreateCurrentAccount(accountNumber,accountHolderName,balance);
-				}
-				
-				bankobj.addCustomer(createAccountObj);
-				createAccountObj.displayAccountDetails();
-				break;
-			case 2:
-				System.out.print("Enter Account Number to Credit: ");
-				int accNumDebit=scanner.nextInt();
-				System.out.print("Enter Amount to Credit: ");
-				double creditAmount=scanner.nextDouble();
-				CreateAccount depositAccountobj=bankobj.getCustomer(accNumDebit);
-				depositAccountobj.creditToAccount(creditAmount);
-			case 3:
-				System.out.println("Enter Account Number to Credit: ");
-				int accNumDebit1=scanner.nextInt();
-				System.out.print("Enter amount to withdraw: ");
-				double withDrawAmount=scanner.nextDouble();
-				CreateAccount Withdrawobj=bankobj.getCustomer(withDrawAmount);
-				Withdrawobj.WithdrawFromAccount(withDrawAmount);
+		while (true) {
+            System.out.println("\n1. Admin Login\n2. Customer Login\n3. Logout\n4. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+			    case 1 -> {
+			        System.out.print("Enter Admin Username: ");
+			        String adminUser = scanner.nextLine();
+			        System.out.print("Enter Admin Password: ");
+			        String adminPass = scanner.nextLine();
+			        if (accountService.adminLogin(adminUser, adminPass)) {
+			            System.out.println("Admin login successful!");
+			            adminActions(accountService, transactionService);
+			        } else {
+			            System.out.println("Invalid admin credentials.");
+			        }
+			    }
 			}
-		}
-		scanner.close();
+        }
+		
 	}
+	
+	private static void adminActions(BankingServices accountService, TransactionService transactionService) throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+        while (accountService.isAdminLoggedIn()) {
+            System.out.println("\n1. Create Account\n2. Credit Transaction\n3. Debit Transaction\n4. Logout");
+            System.out.print("Choose an option: ");
+            int adminChoice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (adminChoice) {
+                case 1 -> accountService.createCustomer();
+                case 2 -> {
+                    System.out.print("Enter Account ID to Credit: ");
+                    int accId = scanner.nextInt();
+                    transactionService.performTransaction(accId, "Credit");
+                }
+            }
+        }
+    }
+
 }
